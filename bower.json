@@ -1,7 +1,7 @@
 {
   "name": "lens-u-options-editor",
   "version": "0.0.0",
-  "keywords": "thelma, polymer, web-components",
+  "keywords": "lenses, polymer, web-components",
   "main": "lens-u-options-editor.html",
   "dependencies": {
     "th-theme": "thelmanews/th-theme",
