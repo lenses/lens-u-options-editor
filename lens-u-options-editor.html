@@ -8,18 +8,18 @@ A Thelma component providing solution to no problem in particular.
 
 ##### Example
 
-    <th-u-options-editor></th-u-options-editor>
+    <lens-u-options-editor></lens-u-options-editor>
 
-@element th-u-options-editor
+@element lens-u-options-editor
 @blurb Element providing solution to no problem in particular.
 @status alpha
-@homepage http://nishacodes.github.io/th-u-options-editor
+@homepage http://nishacodes.github.io/lens-u-options-editor
 -->
 
-<polymer-element name="th-u-options-editor" attributes="options selections">
+<polymer-element name="lens-u-options-editor" attributes="options selections">
   <template>
     <core-style ref="theme"></core-style>
-    <link rel="stylesheet" href="th-u-options-editor.css">
+    <link rel="stylesheet" href="lens-u-options-editor.css">
     
       <div id="optionsContainer" class="optionsContainer closed" style="display: {{options | displayFilter}}">
       <template if="{{!menuOpened}}">

@@ -1,3 +1,3 @@
-# th-u-options-editor
+# lens-u-options-editor
 
-See the [component page](http://nishacodes.github.io/th-u-options-editor) for more information.
+See the [component page](http://nishacodes.github.io/lens-u-options-editor) for more information.
