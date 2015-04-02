@@ -91,6 +91,7 @@ A Thelma component providing solution to no problem in particular.
             case "hidden":
               break;
             case "custom":
+              self.addCustom(attr, self.options[attr]);
               break;
             default: 
               self.addCoreInput(attr, self.options[attr]);
@@ -222,7 +223,38 @@ A Thelma component providing solution to no problem in particular.
           
         })
       },
-      addCustom: function(){
+      addCustom: function(attr, options){
+        // TODO: figure out bower install from github or should it be required in bower for the component? 
+        // TODO: figure out how to set defaults of the custom component itself
+        
+        var self = this,
+            directory = "../"+ options.name + "/" + options.name + ".html",
+            pathToEl = this.resolvePath(directory); // construct path to component
+            
+        // Select the container and empty it
+        var optionContainer = self.getOptionContainer(attr);
+
+        // Create a label and control for the attr and append to container
+        Polymer.import([pathToEl],function(){
+          var label = document.createElement('label');
+              label.innerHTML = options.friendly;
+          
+          var el = document.createElement(options.name);
+              el[options.bindAttr] = self.selections[attr] || options['default'];
+
+              // Sets observer for changes in the 'bindAttr' updates the attr with the new value
+              el.observe = el.observe || {};
+              el.observe[options.bindAttr] = function(){
+                self.updateSelection(attr, el[options.bindAttr]);
+              }
+              var attrObserver = new PathObserver(el, options.bindAttr).open(function(newValue, oldValue){
+                self.updateSelection(attr, newValue);
+              })
+
+          optionContainer.appendChild(label);
+          optionContainer.appendChild(el);
+          
+        })
 
       },
       parseInput: function(value, type){
