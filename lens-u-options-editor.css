@@ -74,6 +74,7 @@ core-selector div {
   display: block;
   margin: 0 3px;
   padding: 1px;
+  min-height: 15px;
 }
 
 core-selector div:hover {

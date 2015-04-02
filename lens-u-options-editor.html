@@ -30,7 +30,8 @@ A Thelma component providing solution to no problem in particular.
       </template>
       <div id="options">
         <template repeat="{{attr in optionAttrs}}">
-          <div class="option" id="{{attr}}"></div>
+          <!-- Displays if value of conditionalAttr is true, otherwise hidden -->
+          <div class="option" id="{{attr}}" style="{{options[attr].conditionalAttr && !selections[options[attr].conditionalAttr] || selections[options[attr].conditionalAttr] == 'none' ? 'height: 0; overflow: hidden' : ''}}"> </div>
         </template>
       </div>
   </template>
@@ -51,13 +52,14 @@ A Thelma component providing solution to no problem in particular.
           var optionsReady = self.$.options.hasChildNodes();
           if(optionsReady) {
             clearInterval(interval);
+            
             self.parseOptions();
           }
         }, 100);
       },
       parseOptions: function(){
         var self = this;
-        for (var attr in self.options){
+        for (var attr in self.options){          
           switch(self.options[attr].type){
             case "boolean":
               self.addToggleButton(attr, self.options[attr]);
@@ -131,10 +133,10 @@ A Thelma component providing solution to no problem in particular.
         var self = this,
             directory = "../paper-slider/paper-slider.html",
             pathToEl = this.resolvePath(directory); // construct path to component
-        
+
         // Select the container and empty it
         var optionContainer = self.getOptionContainer(attr);
-
+      
         // Create a label and control for the attr and append to container
         Polymer.import([pathToEl],function(){
           var label = document.createElement('label');
@@ -171,8 +173,6 @@ A Thelma component providing solution to no problem in particular.
           
           var el = document.createElement('input');
               el["is"] = "core-input"; // does not work -- just a regular input
-              console.log(attr);
-              console.log(self.selections[attr]);
               el.value = self.selections[attr] || options["default"];
 
               el.addEventListener('change', function(e, detail, selection){
