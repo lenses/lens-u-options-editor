@@ -1,6 +1,7 @@
 <link rel="import" href="../polymer/polymer.html"> 
 <link rel="import" href="../th-theme/th-theme.html"> 
 <link rel="import" href="../core-icon/core-icon.html"> 
+<link rel="import" href="../lens-u-colorpicker/lens-u-colorpicker.html"> 
 
 
 <!--
@@ -86,7 +87,7 @@ A Thelma component providing solution to no problem in particular.
               self.addDropdown(attr, self.options[attr]);
               break;
             case "color":
-              self.addCoreInput(attr, self.options[attr]);
+              self.addColorPicker(attr, self.options[attr]);
               break;
             case "hidden":
               break;
@@ -223,6 +224,39 @@ A Thelma component providing solution to no problem in particular.
           
         })
       },
+      addColorPicker: function(attr, options){
+        var self = this,
+            directory = "../lens-u-colorpicker/lens-u-colorpicker.html",
+            pathToEl = this.resolvePath(directory); // construct path to component
+        
+        // Select the container and empty it
+        var optionContainer = self.getOptionContainer(attr);
+
+        // Create a label and control for the attr and append to container
+        Polymer.import([pathToEl],function(){
+          var label = document.createElement('label');
+              label.innerHTML = options.friendly;
+          
+          var el = document.createElement('lens-u-colorpicker');
+                el.color = self.selections[attr] || options['default'];
+                el.presetColors = self.getColors();
+              
+          // Listen for theme changes and update presetColors
+          document.addEventListener('th-theme-changed', function(e) {
+            el.presetColors = self.getColors();
+          });
+
+          // Sets observer for changes in the color and updates the attr with the new value
+          var attrObserver = new PathObserver(el, 'color').open(function(newValue, oldValue){
+            self.updateSelection(attr, newValue);
+          })
+
+          // Append the component and label to container
+          optionContainer.appendChild(label);
+          optionContainer.appendChild(el);
+        })
+
+      },
       addCustom: function(attr, options){
         // TODO: figure out bower install from github or should it be required in bower for the component? 
         // TODO: figure out how to set defaults of the custom component itself
@@ -241,6 +275,13 @@ A Thelma component providing solution to no problem in particular.
           
           var el = document.createElement(options.name);
               el[options.bindAttr] = self.selections[attr] || options['default'];
+              
+              // Set default values for other attrs in custom element
+              if (options.attrDefaults){
+                for (var prop in options.attrDefaults){
+                  el[prop] = options.attrDefaults[prop];
+                }
+              }
 
               // Sets observer for changes in the 'bindAttr' updates the attr with the new value
               el.observe = el.observe || {};
@@ -292,6 +333,24 @@ A Thelma component providing solution to no problem in particular.
         } else {
           return "none";
         }
+      },
+      getColors: function(){
+        var theme  = window.CoreStyle.g.theme,
+            colors = [];
+
+        if (theme){
+          for (var color in theme){
+            if(/^accent/.test(color)){
+              colors.push(theme[color]);
+            }
+          }
+
+          
+          colors.push(theme['background']);
+          colors.push(theme['foreground1']);
+        }
+
+        return colors;
       }
     });
   </script>
