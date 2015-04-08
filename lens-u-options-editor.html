@@ -21,29 +21,98 @@ A Thelma component providing solution to no problem in particular.
   <template>
     <core-style ref="theme"></core-style>
     <link rel="stylesheet" href="lens-u-options-editor.css">
-    
-      <div id="optionsContainer" class="optionsContainer closed" style="display: {{options | displayFilter}}">
-      <template if="{{!menuOpened}}">
-        <core-icon id="open" on-click="{{openMenu}}" icon="chevron-right"></core-icon>
+    <div id="options">
+      <template repeat="{{attr in optionAttrs}}">
+        <!-- Displays if value of conditionalAttr is true, otherwise hidden -->
+        <div class="option" id="{{attr}}" style="{{options[attr].conditionalAttr && !selections[options[attr].conditionalAttr] || selections[options[attr].conditionalAttr] == 'none' ? 'height: 0; overflow: hidden' : ''}}"> </div>
       </template>
-      <template if="{{menuOpened}}">
-        <core-icon id="close" on-click="{{closeMenu}}" icon="chevron-left"></core-icon>
-      </template>
-      <div id="options">
-        <template repeat="{{attr in optionAttrs}}">
-          <!-- Displays if value of conditionalAttr is true, otherwise hidden -->
-          <div class="option" id="{{attr}}" style="{{options[attr].conditionalAttr && !selections[options[attr].conditionalAttr] || selections[options[attr].conditionalAttr] == 'none' ? 'height: 0; overflow: hidden' : ''}}"> </div>
-        </template>
-      </div>
+    </div>
   </template>
-  </div>
   <script>
     Polymer({
+      /**
+       * `options` is an object containing metadata for which options to display, where each 
+       * property is the name of the attribute and the value is an object containing metadata on that attribute
+       * 
+       * Example:
+       * {
+       *    "mapId":{"friendly":"Map ID", "type":"string", "default":""},
+       *    "markerColor":{"friendly":"Marker Color", "type":"string", "default":""},
+       *    "startingZoom":{"friendly":"Starting Zoom", "type":"range", "default":12, "range":[1,20]},
+       *    "startingLat":{"friendly":"Starting Latitude", "type":"float", "default":38.8922},
+       *    "startingLng":{"friendly":"Starting Longitude", "type":"float", "default":-77.0348},
+       *    "geolocation":{"friendly":"Geolocation?", "type":"boolean", "default": false},
+       *    "geolocateZoom":{"friendly":"Geolocate Zoom", "type":"range", "default":10, "range":[1,20]}
+       *  }
+       * General Properties:
+       *   - 'friendly' - display name for attribute 
+       *     @type String
+       *     @default ''
+       *       
+       *   - 'type' - type of input
+       *     @type String
+       *     @default 'string' 
+       *         
+       *   - 'default' - default value for attr 
+       *     @default ''
+       *      
+       *   - 'conditionalAttr' - name of the attribute upon which this attribute depends on. 
+       *     if the value of the conditionalAttr is truthy or != 'none', this option will be displayed  (default: '')
+       *     @type String
+       *     @default ''
+       *
+       * Type-specific Properties:
+       *  @type 'range':
+       *   - 'range' - sets the min and max for the slider
+       *     @type Array
+       *     @default [0,10]
+       *
+       *   - 'step' - sets the increment for the slider
+       *     @type Number
+       *     @default 1
+       *
+       *   @type 'single-select', 'multi-select':
+       *   - 'values' - sets the menu options with these values
+       *     @type Array
+       *     @default []
+       *
+       *   @type 'custom':
+       *   - 'name' - name of the custom element to use
+       *     @type String
+       *     @default ''
+       *
+       *   - 'bindAttr' - name of attribute in custom element to bind the value to 
+       *     @type String
+       *     @default ''
+       *
+       *   - 'attrDefaults' - object of attributes and default values to set on custom element 
+       *     @type {Object}
+       *     @default { }
+       *   
+       * Options for 'type':
+       *   - 'string' - creates an input field
+       *   - 'boolean' - creates a toggle button 
+       *   - 'float' - creates an input field and applies parseFloat to value
+       *   - 'int' - creates an input field and applies parseInt to value
+       *   - 'range' - creates a slider given the range bounds and step
+       *   - 'single-select' - creates a menu allowing only one selection
+       *   - 'multi-select' - creates a menu allowing multiple selections
+       *   - 'color' - creates a colorpicker 
+       *   - 'hidden' - does not display anything, but a default value can be given
+       *   - 'custom' - creates a custom component provided by the options (must be included in bower.json)
+       *
+       * @property options
+       * @default { }
+       * @type {Object}
+       */
+      options: {},
+      /**
+       * 'selection' is an object that keeps track of selected values made for each attribute 
+       * @type {Object}
+       */
       selections: {},
-      menuOpened: false,
       ready: function () {
         // this.optionsChanged();
-
       },
       optionsChanged: function(){
         var self = this;
@@ -145,9 +214,9 @@ A Thelma component providing solution to no problem in particular.
               label.innerHTML = options.friendly;
           
           var el = document.createElement('paper-slider');
-              el.min = options["range"][0];
-              el.max = options["range"][1];
-              el.value = self.selections[attr] || options["default"] || options["range"][0];
+              el.min = options["range"][0] || 0;
+              el.max = options["range"][1] || 10;
+              el.value = self.selections[attr] || options["default"] || options["range"][0] || 0;
               el.step = options["step"] || 1;
               el.pin = true;
 
@@ -316,24 +385,6 @@ A Thelma component providing solution to no problem in particular.
         self.selections[attr] = value;
         self.fire('th-options-changed'); // Fire event because observer does not recognized changes within object
       },
-      openMenu: function(){
-        var self = this;
-        self.menuOpened = true;
-        self.$.optionsContainer.classList.remove('closed');
-
-      },
-      closeMenu: function(){
-        var self = this;
-        self.menuOpened = false;
-        self.$.optionsContainer.classList.add('closed');
-      },
-      displayFilter: function(options){
-        if (options && Object.keys(options).length){
-          return "block"
-        } else {
-          return "none";
-        }
-      },
       getColors: function(){
         var theme  = window.CoreStyle.g.theme,
             colors = [];
@@ -344,7 +395,6 @@ A Thelma component providing solution to no problem in particular.
               colors.push(theme[color]);
             }
           }
-
           
           colors.push(theme['background']);
           colors.push(theme['foreground1']);
